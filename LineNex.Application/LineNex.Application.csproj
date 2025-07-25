@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LineNex.Service\LineNex.Service.csproj" />
+    <ProjectReference Include="..\LineNex.Domain\LineNex.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

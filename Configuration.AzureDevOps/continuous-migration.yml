@@ -1,0 +1,50 @@
+name: LineNex-Backend-Migration
+
+trigger: 
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - LineNex.Infrastructure/Migrations/*
+
+resources:
+  pipelines:
+    - pipeline: continuous-provisioning
+      source: LineNex-Terraform
+      trigger: true
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  ProjectPath: "./LineNex.Infrastructure"
+  StartupProjectPath: "./LineNex.Api"
+
+steps:
+  - task: UseDotNet@2
+    displayName: "DotNet Install"
+    inputs:
+      packageType: "sdk"
+      version: "9.0.300"
+
+  - task: AzureKeyVault@2
+    name: FetchSecrets
+    displayName: "Fetch Secrets"
+    inputs:
+      azureSubscription: "sc-sp-azurerm"
+      KeyVaultName: "kv-linenex-qa"
+      SecretsFilter: "ConnectionStrings--DefaultConnection"
+      RunAsPreJob: true
+
+  - script: |
+      echo "Installing dotnet-ef..."
+      dotnet tool install --global dotnet-ef
+      echo "Updating PATH..."
+      export PATH="$PATH:$HOME/.dotnet/tools"
+
+      echo "Running EF Migrations..."
+      dotnet ef database update --project ${{ variables.ProjectPath }} --startup-project ${{ variables.StartupProjectPath }}
+    displayName: "Apply Migrations"
+    env:
+      ConnectionStrings__DefaultConnection: $(ConnectionStrings--DefaultConnection)

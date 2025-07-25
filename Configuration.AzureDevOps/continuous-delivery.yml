@@ -1,0 +1,42 @@
+name: LineNex-Backend-CD
+
+trigger: none
+
+pool:
+  name: Azure Pipelines
+
+resources:
+  pipelines:
+    - pipeline: backend-continuous-integration
+      source: LineNex-Backend-CI
+      trigger:
+        branches:
+          include:
+            - main
+
+variables:
+  - group: linenex-qa
+
+stages:
+  - stage: Deploy
+    jobs:
+      - job: DeployWebApp
+        steps:
+          - download: backend-continuous-integration
+            artifact: drop
+
+          # - task: FileTransform@2
+          #   inputs:
+          #     folderPath: "$(System.DefaultWorkingDirectory)"
+          #     jsonTargetFiles: "**/appsettings.json"
+
+          - task: AzureRmWebAppDeployment@4
+            displayName: "Deploy Web App"
+            inputs:
+              ConnectionType: "AzureRM"
+              ConnectedServiceName: "$(service_connection_guid)"
+              appType: "webAppLinux"
+              WebAppName: "app-linenex-backend-$(env_suffix)"
+              StartupCommand: "dotnet LineNex.Api.dll"
+              packageForLinux: "$(Pipeline.Workspace)/backend-continuous-integration/drop/**/*.zip"
+              RuntimeStack: "DOTNETCORE|9.0"

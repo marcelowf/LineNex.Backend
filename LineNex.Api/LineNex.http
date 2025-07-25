@@ -1,0 +1,20 @@
+@host = http://localhost:4000
+
+### Registro de novo usuário
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "usuario",
+  "email": "usuario1@teste.com",
+  "password": "123456"
+}
+
+### Obter token JWT
+POST {{host}}/api/auth/gettoken
+Content-Type: application/json
+
+{
+  "email": "usuario1@teste.com",
+  "password": "123456"
+}
